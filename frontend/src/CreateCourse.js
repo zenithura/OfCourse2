@@ -34,11 +34,12 @@ export const CreateCourse = () => {
       try {
         const response = await get('/api/admin/check-auth');
         if (!response.authenticated) {
-          navigate('/admin');
+          navigate('/admin/login');
+          return;
         }
       } catch (error) {
         console.error('Yetkilendirme hatası:', error);
-        navigate('/admin');
+        navigate('/admin/login');
       }
     };
 

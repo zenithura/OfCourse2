@@ -38,13 +38,13 @@ export const EditCourse = () => {
       try {
         const authResponse = await get('/api/admin/check-auth');
         if (!authResponse.authenticated) {
-          navigate('/admin');
+          navigate('/admin/login');
           return;
         }
         fetchCourse();
       } catch (error) {
         console.error('Yetkilendirme hatası:', error);
-        navigate('/admin');
+        navigate('/admin/login');
       }
     };
 
