@@ -18,15 +18,24 @@ const router = createBrowserRouter([
       },
       {
         path: "admin",
-        element: <AdminPanel />
-      },
-      {
-        path: "admin/edit/:id",
-        element: <EditCourse />
-      },
-      {
-        path: "admin/new-course",
-        element: <CreateCourse />
+        children: [
+          {
+            index: true,
+            element: <AdminPanel />
+          },
+          {
+            path: "login",
+            element: <AdminPanel />
+          },
+          {
+            path: "edit/:id",
+            element: <EditCourse />
+          },
+          {
+            path: "new-course",
+            element: <CreateCourse />
+          }
+        ]
       }
     ]
   }

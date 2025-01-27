@@ -44,17 +44,18 @@ export const AdminPanel = () => {
     try {
       await post('/api/admin/login', loginData);
       setIsAuthenticated(true);
+      navigate('/admin');
       fetchCourses();
     } catch (error) {
       alert('Giriş başarısız!');
     }
-  }, [loginData, fetchCourses]);
+  }, [loginData, fetchCourses, navigate]);
 
   const handleLogout = async () => {
     try {
       await post('/api/admin/logout', {});
       setIsAuthenticated(false);
-      navigate('/');
+      navigate('/admin/login');
     } catch (error) {
       console.error('Logout error:', error);
     }
