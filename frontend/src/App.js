@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Root } from './components/Root';
 import { Home } from './components/Home';
 import { AdminPanel } from './AdminPanel';
+import { AdminLogin } from './AdminLogin';
 import { EditCourse } from './EditCourse';
 import { CreateCourse } from './CreateCourse';
 import { NotFound } from './components/NotFound';
@@ -26,7 +27,7 @@ const router = createBrowserRouter([
           },
           {
             path: "login",
-            element: <AdminPanel />
+            element: <AdminLogin />
           },
           {
             path: "edit/:id",

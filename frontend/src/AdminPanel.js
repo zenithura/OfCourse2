@@ -1,18 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { Edit, Trash2, Plus, LogOut, Star, Tag } from 'lucide-react';
 import { get, post, deleteRequest } from './utils/api';
 
-
 export const AdminPanel = () => {
   const [courses, setCourses] = useState([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [selectedCourses, setSelectedCourses] = useState([]);
   const navigate = useNavigate();
-  const location = useLocation();
 
   const fetchCourses = useCallback(async () => {
     try {
@@ -21,43 +17,18 @@ export const AdminPanel = () => {
     } catch (error) {
       console.error('Kurslar yüklenirken hata:', error);
       if (error.message.includes('401')) {
-        setIsAuthenticated(false);
+        navigate('/admin/login', { replace: true });
       }
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
-    const init = async () => {
-      if (window.location.pathname === '/admin/login') {
-        const response = await get('/api/admin/check-auth');
-        if (response.authenticated) {
-          navigate('/admin');
-          return;
-        }
-      } else {
-        fetchCourses();
-      }
-    };
-    init();
-  }, [navigate, fetchCourses]);
-
-  const handleLogin = useCallback(async (e) => {
-    e.preventDefault();
-    try {
-      await post('/api/admin/login', loginData);
-      setIsAuthenticated(true);
-      const from = location.state?.from || '/admin';
-      navigate(from, { replace: true });
-      fetchCourses();
-    } catch (error) {
-      alert('Giriş başarısız!');
-    }
-  }, [loginData, fetchCourses, navigate, location]);
+    fetchCourses();
+  }, [fetchCourses]);
 
   const handleLogout = async () => {
     try {
       await post('/api/admin/logout', {});
-      setIsAuthenticated(false);
       navigate('/admin/login', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
@@ -71,10 +42,14 @@ export const AdminPanel = () => {
         fetchCourses();
       } catch (error) {
         console.error('Silme hatası:', error);
-        alert('Kurs silinemedi!');
+        if (error.message.includes('401')) {
+          navigate('/admin/login', { replace: true });
+        } else {
+          alert('Kurs silinemedi!');
+        }
       }
     }
-  }, [fetchCourses]);
+  }, [fetchCourses, navigate]);
 
   const handleRemoveDiscounts = async () => {
     if (selectedCourses.length === 0) {
@@ -84,12 +59,6 @@ export const AdminPanel = () => {
 
     if (window.confirm('Seçili kursların indirimlerini kaldırmak istediğinizden emin misiniz?')) {
       try {
-        const response = await get('/api/admin/check-auth');
-        if (!response.authenticated) {
-          navigate('/admin/login');
-          return;
-        }
-
         await post('/api/admin/remove-discounts', { courseIds: selectedCourses });
         await fetchCourses();
         setSelectedCourses([]);
@@ -97,7 +66,7 @@ export const AdminPanel = () => {
       } catch (error) {
         console.error('İndirim kaldırma hatası:', error);
         if (error.message.includes('401')) {
-          navigate('/admin/login');
+          navigate('/admin/login', { replace: true });
         } else {
           alert('İndirimler kaldırılırken bir hata oluştu!');
         }
@@ -122,47 +91,6 @@ export const AdminPanel = () => {
       }
     });
   };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6">
-            <h2 className="text-2xl font-bold mb-6 text-center">Admin Girişi</h2>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kullanıcı Adı
-                </label>
-                <input
-                  type="text"
-                  value={loginData.username}
-                  onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                  className="w-full p-2 border rounded-md"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Şifre
-                </label>
-                <input
-                  type="password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  className="w-full p-2 border rounded-md"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Giriş Yap
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
