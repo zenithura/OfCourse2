@@ -8,13 +8,9 @@ export const ProtectedRoute = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
-    let isMounted = true;
-
     const checkAuth = async () => {
       try {
         const response = await get('/api/admin/check-auth');
-        if (!isMounted) return;
-
         if (!response.authenticated) {
           navigate('/admin/login', { 
             replace: true,
@@ -24,22 +20,26 @@ export const ProtectedRoute = ({ children }) => {
         }
         setIsLoading(false);
       } catch (error) {
-        if (!isMounted) return;
         console.error('Yetkilendirme hatası:', error);
-        navigate('/admin/login', { 
-          replace: true,
-          state: { from: location.pathname }
-        });
+        if (error.message.includes('401')) {
+          navigate('/admin/login', { 
+            replace: true,
+            state: { from: location.pathname }
+          });
+        }
       }
     };
 
-    checkAuth();
+    if (location.pathname !== '/admin/login') {
+      checkAuth();
+    }
+
     return () => {
-      isMounted = false;
+      setIsLoading(false);
     };
   }, [navigate, location]);
 
-  if (isLoading) {
+  if (isLoading && location.pathname !== '/admin/login') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-xl font-semibold text-gray-600">Yükleniyor...</div>

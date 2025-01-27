@@ -1,19 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from './components/ui/card';
 import { Button } from './components/ui/button';
-import { post } from './utils/api';
+import { post, get } from './utils/api';
 
 export const AdminLogin = () => {
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await get('/api/admin/check-auth');
+        if (response.authenticated) {
+          navigate('/admin', { replace: true });
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await post('/api/admin/login', loginData);
-      navigate('/admin', { replace: true });
+      const response = await post('/api/admin/login', loginData);
+      if (response.message === 'Login successful' || response.authenticated) {
+        navigate('/admin', { replace: true });
+      } else {
+        alert('Giriş başarısız!');
+      }
     } catch (error) {
+      console.error('Login error:', error);
       alert('Giriş başarısız!');
     }
   };
