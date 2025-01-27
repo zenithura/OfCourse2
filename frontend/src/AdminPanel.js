@@ -80,13 +80,23 @@ export const AdminPanel = () => {
 
     if (window.confirm('Seçili kursların indirimlerini kaldırmak istediğinizden emin misiniz?')) {
       try {
+        const response = await get('/api/admin/check-auth');
+        if (!response.authenticated) {
+          navigate('/admin/login');
+          return;
+        }
+
         await post('/api/admin/remove-discounts', { courseIds: selectedCourses });
-        fetchCourses();
+        await fetchCourses();
         setSelectedCourses([]);
         alert('İndirimler başarıyla kaldırıldı!');
       } catch (error) {
         console.error('İndirim kaldırma hatası:', error);
-        alert('İndirimler kaldırılırken bir hata oluştu!');
+        if (error.message.includes('401')) {
+          navigate('/admin/login');
+        } else {
+          alert('İndirimler kaldırılırken bir hata oluştu!');
+        }
       }
     }
   };
