@@ -26,6 +26,9 @@ export const AdminPanel = () => {
     try {
       const response = await get('/api/admin/check-auth');
       setIsAuthenticated(response.authenticated);
+      if (response.authenticated && window.location.pathname === '/admin/login') {
+        navigate('/admin');
+      }
       if (response.authenticated) {
         fetchCourses();
       }
@@ -33,7 +36,7 @@ export const AdminPanel = () => {
       console.error('Auth check error:', error);
       setIsAuthenticated(false);
     }
-  }, [fetchCourses]);
+  }, [fetchCourses, navigate]);
 
   useEffect(() => {
     checkAuth();
@@ -55,7 +58,7 @@ export const AdminPanel = () => {
     try {
       await post('/api/admin/logout', {});
       setIsAuthenticated(false);
-      navigate('/admin/login');
+      navigate('/admin/login', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
     }

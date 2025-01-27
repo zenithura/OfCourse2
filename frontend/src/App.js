@@ -5,6 +5,7 @@ import { AdminPanel } from './AdminPanel';
 import { EditCourse } from './EditCourse';
 import { CreateCourse } from './CreateCourse';
 import { NotFound } from './components/NotFound';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 const router = createBrowserRouter([
   {
@@ -21,7 +22,7 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <AdminPanel />
+            element: <ProtectedRoute><AdminPanel /></ProtectedRoute>
           },
           {
             path: "login",
@@ -29,11 +30,11 @@ const router = createBrowserRouter([
           },
           {
             path: "edit/:id",
-            element: <EditCourse />
+            element: <ProtectedRoute><EditCourse /></ProtectedRoute>
           },
           {
             path: "new-course",
-            element: <CreateCourse />
+            element: <ProtectedRoute><CreateCourse /></ProtectedRoute>
           }
         ]
       }
