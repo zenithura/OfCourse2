@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { Edit, Trash2, Plus, LogOut, Star, Tag } from 'lucide-react';
@@ -12,6 +12,7 @@ export const AdminPanel = () => {
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [selectedCourses, setSelectedCourses] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchCourses = useCallback(async () => {
     try {
@@ -19,40 +20,39 @@ export const AdminPanel = () => {
       setCourses(response);
     } catch (error) {
       console.error('Kurslar yüklenirken hata:', error);
+      if (error.message.includes('401')) {
+        setIsAuthenticated(false);
+      }
     }
   }, []);
 
-  const checkAuth = useCallback(async () => {
-    try {
-      const response = await get('/api/admin/check-auth');
-      setIsAuthenticated(response.authenticated);
-      if (response.authenticated && window.location.pathname === '/admin/login') {
-        navigate('/admin');
-      }
-      if (response.authenticated) {
+  useEffect(() => {
+    const init = async () => {
+      if (window.location.pathname === '/admin/login') {
+        const response = await get('/api/admin/check-auth');
+        if (response.authenticated) {
+          navigate('/admin');
+          return;
+        }
+      } else {
         fetchCourses();
       }
-    } catch (error) {
-      console.error('Auth check error:', error);
-      setIsAuthenticated(false);
-    }
-  }, [fetchCourses, navigate]);
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    };
+    init();
+  }, [navigate, fetchCourses]);
 
   const handleLogin = useCallback(async (e) => {
     e.preventDefault();
     try {
       await post('/api/admin/login', loginData);
       setIsAuthenticated(true);
-      navigate('/admin');
+      const from = location.state?.from || '/admin';
+      navigate(from, { replace: true });
       fetchCourses();
     } catch (error) {
       alert('Giriş başarısız!');
     }
-  }, [loginData, fetchCourses, navigate]);
+  }, [loginData, fetchCourses, navigate, location]);
 
   const handleLogout = async () => {
     try {
