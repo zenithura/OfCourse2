@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { Upload, Image as ImageIcon } from 'lucide-react';
-import { get, post, put } from './utils/api';
+import { get } from './utils/api';
 
 export const EditCourse = () => {
   const { id } = useParams();
@@ -114,7 +114,7 @@ export const EditCourse = () => {
 
       formData.append('courseData', JSON.stringify(courseDataForSubmit));
 
-      const response = await put(`/api/admin/courses/${id}`, formData);
+      const response = await get(`/api/admin/courses/${id}`, formData);
       
       if (response.message) {
         if (response.course) {
